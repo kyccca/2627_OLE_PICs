@@ -42,7 +42,7 @@
     </div>
 
     <script>
-        // 更新後的活動數據
+        // 完整的活動數據
         const activitiesData = {
             "生涯規劃組": [
                 { grade: "中一", date: "30/10(五)", name: "地點:突破營地 (上午)" },
@@ -131,8 +131,8 @@
         activityForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // 請將下方的 URL 替換為你的 Google Apps Script Web App URL
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysgjALBlL7GR_180pX6RkbWRIY2UQ_R5XEqQZC8fEr7RhBADHOiNe0cSW3q07EWyu0/exec';
+            // ⚠️ 請務必將下方的 URL 替換為你的 Google Apps Script Web App URL
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMWeXDl1wCK6gnyXHV3gE04hvfhRsSs7wqg3qXfn7Z-8uBiV-IMR3p_DrJki6O_AHg/exec';
             
             const selectedGroup = groupSelect.value;
             const inputs = activitiesContainer.querySelectorAll('input[type="text"]');
@@ -154,29 +154,22 @@
             submitBtn.innerText = '提交中...';
             submitBtn.disabled = true;
 
-      // 傳送資料到 Google Sheets
+            // 傳送資料到 Google Sheets
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                // ⚠️ 注意：移除了 mode: 'no-cors'
+                mode: 'no-cors', // 使用 no-cors 避免跨網域問題
                 headers: {
-                    // ⚠️ 關鍵修改：將 application/json 改為 text/plain;charset=utf-8
-                    // 這樣可以避開瀏覽器的 CORS 預檢請求 (Preflight OPTIONS)
-                    'Content-Type': 'text/plain;charset=utf-8',
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(submitData)
-            }).then(response => {
-                // GAS 執行成功後會回傳 response
-                if (response.ok) {
-                    activityForm.reset();
-                    activityForm.classList.add('hidden');
-                    groupSelect.value = '';
-                    successMessage.classList.remove('hidden');
-                } else {
-                    throw new Error('Network response was not ok.');
-                }
+            }).then(() => {
+                activityForm.reset();
+                activityForm.classList.add('hidden');
+                groupSelect.value = '';
+                successMessage.classList.remove('hidden');
             }).catch(error => {
-                alert('提交失敗，請檢查網址或稍後再試。');
-                console.error('Error!', error);
+                alert('提交失敗，請稍後再試。');
+                console.error('Error!', error.message);
             }).finally(() => {
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
