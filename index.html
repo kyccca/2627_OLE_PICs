@@ -42,7 +42,6 @@
     </div>
 
     <script>
-        // 完整的活動數據
         const activitiesData = {
             "生涯規劃組": [
                 { grade: "中一", date: "30/10(五)", name: "地點:突破營地 (上午)" },
@@ -95,7 +94,6 @@
         const activitiesContainer = document.getElementById('activitiesContainer');
         const successMessage = document.getElementById('successMessage');
 
-        // 當選擇組別時，動態顯示該組別的活動
         groupSelect.addEventListener('change', function() {
             const selectedGroup = this.value;
             activitiesContainer.innerHTML = '';
@@ -127,7 +125,6 @@
             }
         });
 
-        // 處理表單提交
         activityForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -148,28 +145,28 @@
                 });
             });
 
-            // 提交按鈕顯示載入中
             const submitBtn = activityForm.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.innerText;
             submitBtn.innerText = '提交中...';
             submitBtn.disabled = true;
 
-            // 傳送資料到 Google Sheets
+            // 更改為 text/plain 格式發送，避免 CORS 阻擋
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // 使用 no-cors 避免跨網域問題
+                mode: 'no-cors',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'text/plain;charset=utf-8',
                 },
                 body: JSON.stringify(submitData)
             }).then(() => {
+                // 因為 no-cors 無法讀取回傳狀態，只要不報錯就視為成功
                 activityForm.reset();
                 activityForm.classList.add('hidden');
                 groupSelect.value = '';
                 successMessage.classList.remove('hidden');
             }).catch(error => {
                 alert('提交失敗，請稍後再試。');
-                console.error('Error!', error.message);
+                console.error('Error!', error);
             }).finally(() => {
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
