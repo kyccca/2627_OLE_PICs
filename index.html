@@ -150,24 +150,27 @@
             submitBtn.innerText = '提交中...';
             submitBtn.disabled = true;
 
-            // 更改為 text/plain 格式發送，避免 CORS 阻擋
+            // 更改為 text/plain 格式發送，並移除 no-cors 以便讀取回傳結果
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
                 headers: {
                     'Content-Type': 'text/plain;charset=utf-8',
                 },
                 body: JSON.stringify(submitData)
-            }).then(() => {
-                // 因為 no-cors 無法讀取回傳狀態，只要不報錯就視為成功
+            })
+            .then(response => response.json()) // 解析 GAS 回傳的 JSON
+            .then(data => {
+                // 只要成功解析回傳結果，就視為提交成功
                 activityForm.reset();
                 activityForm.classList.add('hidden');
                 groupSelect.value = '';
                 successMessage.classList.remove('hidden');
-            }).catch(error => {
+            })
+            .catch(error => {
                 alert('提交失敗，請稍後再試。');
                 console.error('Error!', error);
-            }).finally(() => {
+            })
+            .finally(() => {
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
             });
