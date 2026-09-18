@@ -132,7 +132,7 @@
             e.preventDefault();
             
             // 請將下方的 URL 替換為你的 Google Apps Script Web App URL
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx3fwyZ0ypuclXx9HkDz07R6NIt3BLdfm-4sVcHqpavt7m6VPk3wtTBr1eO_VDlJSr9/exec';
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysgjALBlL7GR_180pX6RkbWRIY2UQ_R5XEqQZC8fEr7RhBADHOiNe0cSW3q07EWyu0/exec';
             
             const selectedGroup = groupSelect.value;
             const inputs = activitiesContainer.querySelectorAll('input[type="text"]');
@@ -154,22 +154,29 @@
             submitBtn.innerText = '提交中...';
             submitBtn.disabled = true;
 
-            // 傳送資料到 Google Sheets
+      // 傳送資料到 Google Sheets
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // 避免 CORS 問題
+                // ⚠️ 注意：移除了 mode: 'no-cors'
                 headers: {
-                    'Content-Type': 'application/json',
+                    // ⚠️ 關鍵修改：將 application/json 改為 text/plain;charset=utf-8
+                    // 這樣可以避開瀏覽器的 CORS 預檢請求 (Preflight OPTIONS)
+                    'Content-Type': 'text/plain;charset=utf-8',
                 },
                 body: JSON.stringify(submitData)
-            }).then(() => {
-                activityForm.reset();
-                activityForm.classList.add('hidden');
-                groupSelect.value = '';
-                successMessage.classList.remove('hidden');
+            }).then(response => {
+                // GAS 執行成功後會回傳 response
+                if (response.ok) {
+                    activityForm.reset();
+                    activityForm.classList.add('hidden');
+                    groupSelect.value = '';
+                    successMessage.classList.remove('hidden');
+                } else {
+                    throw new Error('Network response was not ok.');
+                }
             }).catch(error => {
-                alert('提交失敗，請稍後再試。');
-                console.error('Error!', error.message);
+                alert('提交失敗，請檢查網址或稍後再試。');
+                console.error('Error!', error);
             }).finally(() => {
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
